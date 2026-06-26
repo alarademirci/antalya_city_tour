@@ -14,7 +14,8 @@ from urllib.parse import urlparse, urljoin
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'antalya-tours-dev-secret-2026')
 
-UPLOAD_FOLDER = os.path.join('static', 'uploads')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB
@@ -27,7 +28,50 @@ LANGUAGES = ['Italian', 'English', 'Spanish', 'Portuguese', 'German']
 THEMES = ['Food Tour', 'Historical', 'Recreational Activity']
 DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 DAY_NUM = {d: i for i, d in enumerate(DAYS_OF_WEEK)}
-DATABASE = 'antalya_tours.db'
+DATABASE = os.path.join(BASE_DIR, 'antalya_tours.db')
+
+SCHEDULE_TERMS = {
+    'English': {
+        'every': 'Every',
+        'at': 'at',
+        'days': {
+            'Monday': 'Monday', 'Tuesday': 'Tuesday', 'Wednesday': 'Wednesday',
+            'Thursday': 'Thursday', 'Friday': 'Friday', 'Saturday': 'Saturday', 'Sunday': 'Sunday',
+        },
+    },
+    'Spanish': {
+        'every': 'Cada',
+        'at': 'a las',
+        'days': {
+            'Monday': 'lunes', 'Tuesday': 'martes', 'Wednesday': 'miercoles',
+            'Thursday': 'jueves', 'Friday': 'viernes', 'Saturday': 'sabado', 'Sunday': 'domingo',
+        },
+    },
+    'Italian': {
+        'every': 'Ogni',
+        'at': 'alle',
+        'days': {
+            'Monday': 'lunedi', 'Tuesday': 'martedi', 'Wednesday': 'mercoledi',
+            'Thursday': 'giovedi', 'Friday': 'venerdi', 'Saturday': 'sabato', 'Sunday': 'domenica',
+        },
+    },
+    'Portuguese': {
+        'every': 'Toda',
+        'at': 'as',
+        'days': {
+            'Monday': 'segunda-feira', 'Tuesday': 'terca-feira', 'Wednesday': 'quarta-feira',
+            'Thursday': 'quinta-feira', 'Friday': 'sexta-feira', 'Saturday': 'sabado', 'Sunday': 'domingo',
+        },
+    },
+    'German': {
+        'every': 'Jeden',
+        'at': 'um',
+        'days': {
+            'Monday': 'Montag', 'Tuesday': 'Dienstag', 'Wednesday': 'Mittwoch',
+            'Thursday': 'Donnerstag', 'Friday': 'Freitag', 'Saturday': 'Samstag', 'Sunday': 'Sonntag',
+        },
+    },
+}
 
 
 # ── DB helpers ────────────────────────────────────────────────────────────────
@@ -60,6 +104,12 @@ def get_csrf_token():
     return session['_csrf_token']
 
 
+def schedule_label(day_of_week, start_time, language):
+    terms = SCHEDULE_TERMS.get(language) or SCHEDULE_TERMS['English']
+    day_txt = terms['days'].get(day_of_week, day_of_week)
+    return f"{terms['every']} {day_txt} {terms['at']} {start_time}"
+
+
 @app.before_request
 def csrf_protect():
     if request.method == 'POST':
@@ -74,6 +124,7 @@ def inject_globals():
     return {
         'csrf_token': get_csrf_token(),
         'current_year': datetime.now().year,
+        'schedule_label': schedule_label,
     }
 
 
@@ -615,7 +666,7 @@ def create_tour():
                     db.execute('INSERT INTO tour_schedule (tour_id, day_of_week, start_time) VALUES (?,?,?)',
                                (tid, day, t))
                 for i, photo in enumerate(photos[:5]):
-                    fn = save_upload(photo, 'tours')
+                    fn = save_upload(photo, 'tour_photos')
                     if fn:
                         db.execute('INSERT INTO tour_photos (tour_id, filename, order_num) VALUES (?,?,?)',
                                    (tid, fn, i))
@@ -721,7 +772,7 @@ def edit_tour(tour_id):
                 if new_photos:
                     cnt = db.execute('SELECT COUNT(*) AS c FROM tour_photos WHERE tour_id=?', (tour_id,)).fetchone()['c']
                     for i, photo in enumerate(new_photos):
-                        fn = save_upload(photo, 'tours')
+                        fn = save_upload(photo, 'tour_photos')
                         if fn:
                             db.execute('INSERT INTO tour_photos (tour_id, filename, order_num) VALUES (?,?,?)',
                                        (tour_id, fn, cnt + i))
@@ -1044,7 +1095,7 @@ def too_large(e):
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 if __name__ == '__main__':
-    os.makedirs(os.path.join('static', 'uploads', 'tours'), exist_ok=True)
+    os.makedirs(os.path.join('static', 'uploads', 'tour_photos'), exist_ok=True)
     os.makedirs(os.path.join('static', 'uploads', 'reports'), exist_ok=True)
     create_tables()
     app.run(debug=True)

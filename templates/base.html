@@ -14,7 +14,8 @@
 <nav class="navbar navbar-expand-lg navbar-dark site-nav">
     <div class="container">
         <a class="navbar-brand" href="{{ url_for('index') }}">
-            <i class="bi bi-compass-fill me-2"></i>Antalya City Tours
+            <i class="bi bi-sailboat-fill me-2 brand-logo"></i>Antalya City Tours
+            <i class="bi bi-geo-alt-fill ms-1 brand-extra-icon" aria-hidden="true"></i>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain"
                 aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation">
@@ -23,7 +24,7 @@
         <div class="collapse navbar-collapse" id="navMain">
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('index') }}">
+                    <a class="btn btn-sm nav-pill nav-pill-tours" href="{{ url_for('index') }}">
                         <i class="bi bi-map me-1"></i>Tours
                     </a>
                 </li>
@@ -76,18 +77,15 @@
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('login') }}">Log in</a>
+                        <a class="btn btn-sm nav-pill nav-pill-login" href="{{ url_for('login') }}">Log in</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link d-lg-none" href="{{ url_for('login') }}">
-                            <i class="bi bi-shield-lock me-1"></i>Admin Login
-                        </a>
-                        <a class="btn btn-outline-warning btn-sm px-3 ms-1 d-none d-lg-inline-block" href="{{ url_for('login') }}">
+                        <a class="btn btn-sm nav-pill nav-pill-admin" href="{{ url_for('login') }}">
                             <i class="bi bi-shield-lock me-1"></i>Admin Login
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="btn btn-accent btn-sm px-3 ms-1" href="{{ url_for('register') }}">
+                        <a class="btn btn-sm nav-pill nav-pill-register" href="{{ url_for('register') }}">
                             Register
                         </a>
                     </li>
@@ -117,13 +115,13 @@
 <footer class="site-footer mt-5">
     <div class="container text-center py-4">
         <p class="mb-1 fw-semibold">
-            <i class="bi bi-compass-fill me-1"></i>Antalya City Tours
+            <i class="bi bi-sailboat-fill me-1 brand-logo"></i>Antalya City Tours
         </p>
-        <p class="small text-muted mb-0">
-            Free Walking Tours in the Pearl of the Mediterranean &mdash;
-            Explore history, culture &amp; flavour with passionate local guides.
+        <p class="small text-white mb-0">
+            My student project that lets you discover the wonders of Antalya!
         </p>
-        <p class="small text-muted mt-1 mb-0">&copy; {{ current_year }} Antalya City Tours</p>
+        <p class="small text-white mt-1 mb-0">For contact: +90 xxx xxx xx xx</p>
+        <p class="small text-white mt-1 mb-0">&copy; {{ current_year }} Antalya City Tours</p>
     </div>
 </footer>
 

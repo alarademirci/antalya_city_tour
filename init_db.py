@@ -66,13 +66,13 @@ def seed():
         )
         return db.execute('SELECT id FROM users WHERE email=?', (email,)).fetchone()['id']
 
-    admin_id  = add_user('Admin', 'Panel', 'admin@antalya.com', 'A9dm!nWave2026', 'admin')
+    admin_id  = add_user('Admin', 'Panel', 'admin@antalya.com', 'adminspecial12345', 'admin')
     guide1_id = add_user('Gulnihal', 'Aktan', 'gaktan@antalyatours.com', 'gaktan12345', 'guide')
     guide2_id = add_user('Leo', 'Valdez', 'leovv@antalyatours.com', 'lelele1206', 'guide')
     guide3_id = add_user('Maria', 'Belluci', 'mariabb@antalyatours.com', 'tiramisu123', 'guide')
-    p1_id     = add_user('John', 'Smith', 'john@example.com', 'BlueTrail#47', 'participant')
-    p2_id     = add_user('Maria', 'Garcia', 'maria@example.com', 'SunsetPath!58', 'participant')
-    p3_id     = add_user('Hans', 'Mueller', 'hans@example.com', 'HarborQuest@63', 'participant')
+    p1_id     = add_user('John', 'Smith', 'john@example.com', 'john12345', 'participant')
+    p2_id     = add_user('Maria', 'Garcia', 'maria@example.com', 'mariamaria123', 'participant')
+    p3_id     = add_user('Hans', 'Mueller', 'hans@example.com', 'hansmue1234', 'participant')
 
     # Guide languages
     for lang in ['English']:
@@ -196,17 +196,17 @@ def seed():
     print('✓ Database seeded successfully!\n')
     print('Credentials')
     print('───────────────────────────────────────────')
-    print(f'  Admin:         admin@antalya.com        / A9dm!nWave2026')
+    print(f'  Admin:         admin@antalya.com        / adminspecial12345')
     print(f'  Guide 1:       gaktan@antalyatours.com  / gaktan12345')
     print(f'  Guide 2:       leovv@antalyatours.com   / lelele1206')
     print(f'  Guide 3:       mariabb@antalyatours.com / tiramisu123')
-    print(f'  Participant 1: john@example.com         / BlueTrail#47')
-    print(f'  Participant 2: maria@example.com        / SunsetPath!58')
-    print(f'  Participant 3: hans@example.com         / HarborQuest@63')
+    print(f'  Participant 1: john@example.com         / john12345')
+    print(f'  Participant 2: maria@example.com        / mariamaria123')
+    print(f'  Participant 3: hans@example.com         / hansmue1234')
 
 
 if __name__ == '__main__':
-    os.makedirs(os.path.join('static', 'uploads', 'tours'), exist_ok=True)
+    os.makedirs(os.path.join('static', 'uploads', 'tour_photos'), exist_ok=True)
     os.makedirs(os.path.join('static', 'uploads', 'reports'), exist_ok=True)
     create_tables()
     seed()

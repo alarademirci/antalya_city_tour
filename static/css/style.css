@@ -1,14 +1,11 @@
-/* ═══════════════════════════════════════════════════════════
-   Antalya City Tours – Custom Styles
-   My chosen palette: sea blue #1a6faf | sunset orange #f5823a | cream #faf7f2
-   ═══════════════════════════════════════════════════════════ */
+/* Basic styles for Antalya City Tours */
 
 /* ── CSS Variables ───────────────────────────────────────── */
 :root {
     --primary:    #1a6faf;
     --primary-dk: #145a8e;
-    --accent:     #f5823a;
-    --accent-dk:  #d96920;
+    --accent:     #2f8fd6;
+    --accent-dk:  #1f74b0;
     --bg:         #faf7f2;
     --text:       #2d3436;
     --muted:      #636e72;
@@ -67,6 +64,16 @@ body {
     letter-spacing: .5px;
 }
 
+.brand-logo {
+    color: #8fe8ff;
+}
+
+.brand-extra-icon {
+    color: #7be495;
+    font-size: .9rem;
+    vertical-align: middle;
+}
+
 .site-nav .nav-link {
     font-weight: 500;
     border-radius: 0.4rem;
@@ -76,6 +83,44 @@ body {
 
 .site-nav .nav-link:hover {
     background: rgba(255,255,255,.12);
+}
+
+.nav-pill {
+    color: #fff !important;
+    border: 0;
+    border-radius: 999px;
+    font-weight: 600;
+    padding: .35rem .9rem;
+    margin-left: .35rem;
+}
+
+.nav-pill:hover,
+.nav-pill:focus {
+    color: #fff !important;
+    transform: translateY(-1px);
+}
+
+.nav-pill-tours {
+    background: linear-gradient(135deg, #1b84d6, #0f67b0);
+}
+
+.nav-pill-login {
+    background: linear-gradient(135deg, #2f9aa0, #1f7f85);
+}
+
+.nav-pill-admin {
+    background: linear-gradient(135deg, #2f78d6, #2557b8);
+}
+
+.nav-pill-register {
+    background: linear-gradient(135deg, #2ca878, #1d8d63);
+}
+
+@media (max-width: 991.98px) {
+    .nav-pill {
+        margin: .25rem 0;
+        display: inline-block;
+    }
 }
 
 /* ── Avatar circle ───────────────────────────────────────── */
@@ -107,12 +152,12 @@ body {
     display: flex;
     align-items: center;
     background:
-        linear-gradient(160deg, rgba(10,50,90,.72) 0%, rgba(245,130,58,.40) 100%),
-        url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=80') center/cover no-repeat;
+        linear-gradient(rgba(10,50,90,.62), rgba(10,50,90,.62)),
+        url('../uploads/tour_photos/antalya.jpg') center/cover no-repeat;
     padding: 4rem 0;
 }
 
-.hero-overlay { display: none; } /* gradient already in background shorthand */
+.hero-overlay { display: none; }
 
 /* ── Filter bar ──────────────────────────────────────────── */
 .filter-bar {
@@ -151,11 +196,26 @@ body {
     position: absolute;
     top: .6rem;
     right: .6rem;
-    background: rgba(26,111,175,.85) !important;
+    color: #fff;
     backdrop-filter: blur(4px);
     font-size: .75rem;
     padding: .25em .6em;
 }
+
+.badge-lang-english { background-color: #1e88e5 !important; }
+.badge-lang-spanish { background-color: #e53935 !important; }
+.badge-lang-italian { background-color: #43a047 !important; }
+.badge-lang-portuguese { background-color: #00897b !important; }
+.badge-lang-german { background-color: #5e35b1 !important; }
+
+.theme-badge {
+    color: #fff;
+    border: 0;
+}
+
+.badge-theme-historical { background-color: #6d4c41 !important; }
+.badge-theme-recreational-activity { background-color: #00838f !important; }
+.badge-theme-food-tour { background-color: #ef6c00 !important; }
 
 /* ── Tour detail ─────────────────────────────────────────── */
 .tour-detail-photo {
@@ -246,7 +306,7 @@ body {
 }
 
 .register-icon-accent {
-    background: linear-gradient(135deg, var(--accent), #faa46c);
+    background: linear-gradient(135deg, var(--accent), #62b0e8);
 }
 
 /* ── Admin stats ─────────────────────────────────────────── */

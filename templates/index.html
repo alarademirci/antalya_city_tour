@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
-{% block title %}Explore Antalya – Free Walking Tours{% endblock %}
+{% block title %}Antalya Free Walking Tours{% endblock %}
 
 {% block content %}
 <!-- Hero -->
 <header class="hero-section">
     <div class="hero-overlay"></div>
     <div class="container position-relative text-white text-center py-5">
-        <h1 class="display-4 fw-bold mb-2">Discover Antalya on Foot</h1>
+        <h1 class="display-4 fw-bold mb-2">Free Walking Tours in Antalya</h1>
         <p class="lead mb-4">
             Are you ready to discover the miracles Antalya has to offer, the city our beloved founder Ataturk believed to be the most beautiful place on Earth?
         </p>
@@ -91,7 +91,7 @@
                                         <i class="bi bi-image text-white" style="font-size:2.5rem;opacity:.5"></i>
                                     </div>
                                 {% endif %}
-                                <span class="lang-badge badge">{{ t['language'] }}</span>
+                                <span class="lang-badge badge badge-lang-{{ t['language']|lower }}">{{ t['language'] }}</span>
                             </a>
                             <div class="card-body d-flex flex-column">
                                 <h2 class="card-title h5 mb-1">
@@ -104,7 +104,7 @@
                                     <i class="bi bi-person me-1"></i>{{ t['guide_name'] }}
                                 </p>
                                 <p class="small mb-2">
-                                    <span class="badge text-bg-light border">{{ t['theme'] }}</span>
+                                    <span class="badge theme-badge badge-theme-{{ t['theme']|lower|replace(' ', '-') }}">{{ t['theme'] }}</span>
                                 </p>
                                 <p class="card-text small text-secondary mb-3">
                                     {{ t['description'][:110] }}{% if t['description']|length > 110 %}…{% endif %}
@@ -121,7 +121,7 @@
                                     <li>
                                         <i class="bi bi-calendar3 text-primary me-1"></i>
                                         {% for s in item.schedule %}
-                                            {{ s['day_of_week'][:3] }} {{ s['start_time'] }}{% if not loop.last %} · {% endif %}
+                                            {{ schedule_label(s['day_of_week'], s['start_time'], t['language']) }}{% if not loop.last %} · {% endif %}
                                         {% endfor %}
                                     </li>
                                 </ul>
