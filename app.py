@@ -282,7 +282,6 @@ def index():
     fdur = request.args.get('duration', '').strip()
     flang = request.args.get('language', '').strip()
     ftheme = request.args.get('theme', '').strip()
-    fsort_lang = request.args.get('sort_language', '').strip()
 
     q = ('SELECT t.*, u.first_name || " " || u.last_name AS guide_name '
          'FROM tours t JOIN users u ON t.guide_id = u.id WHERE 1=1')
@@ -324,15 +323,10 @@ def index():
         ).fetchall()
         result.append({'tour': t, 'photo': photo['filename'] if photo else None, 'schedule': sched})
 
-    if fsort_lang in LANGUAGES:
-        # Keep selected language tours at the top, then sort remaining by language.
-        result.sort(key=lambda x: (x['tour']['language'] != fsort_lang, x['tour']['language']))
-
     db.close()
     return render_template('index.html', tours=result, languages=LANGUAGES,
                            themes=THEMES, filter_date=fd, filter_duration=fdur,
                            filter_language=flang, filter_theme=ftheme,
-                           sort_language=fsort_lang,
                            today=date.today().strftime('%Y-%m-%d'))
 
 

@@ -9,8 +9,7 @@
     <div class="container position-relative text-white text-center py-5">
         <h1 class="display-4 fw-bold mb-2">Discover Antalya on Foot</h1>
         <p class="lead mb-4">
-            Free Walking Tours led by passionate local guides.<br>
-            Pay what you feel — explore what you love.
+            Are you ready to discover the miracles Antalya has to offer, the city our beloved founder Ataturk believed to be the most beautiful place on Earth?
         </p>
         {% if not current_user.is_authenticated %}
             <a href="{{ url_for('register') }}" class="btn btn-accent btn-lg me-2">Join a Tour</a>
@@ -55,22 +54,11 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-2">
-                <label for="fSortLang" class="form-label small fw-semibold">Sort by Language</label>
-                <select id="fSortLang" name="sort_language" class="form-select form-select-sm">
-                    <option value="">Default</option>
-                    <option value="Italian" {% if sort_language=='Italian' %}selected{% endif %}>Italian</option>
-                    <option value="English" {% if sort_language=='English' %}selected{% endif %}>English</option>
-                    <option value="Portuguese" {% if sort_language=='Portuguese' %}selected{% endif %}>Portuguese</option>
-                    <option value="Spanish" {% if sort_language=='Spanish' %}selected{% endif %}>Spanish</option>
-                    <option value="German" {% if sort_language=='German' %}selected{% endif %}>German</option>
-                </select>
-            </div>
             <div class="col-md-2 d-flex gap-2">
                 <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
                     <i class="bi bi-search me-1"></i>Filter
                 </button>
-                {% if filter_date or filter_duration or filter_language or filter_theme or sort_language %}
+                {% if filter_date or filter_duration or filter_language or filter_theme %}
                     <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">
                         <i class="bi bi-x-lg"></i>
                     </a>
