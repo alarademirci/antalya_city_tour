@@ -1073,6 +1073,12 @@ def admin():
             'JOIN tours t ON r.tour_id = t.id GROUP BY t.language ORDER BY cnt DESC'
         ).fetchall(),
     }
+    admins = db.execute(
+        "SELECT id, first_name, last_name, email FROM users WHERE role = 'admin' ORDER BY id DESC"
+    ).fetchall()
+    participants = db.execute(
+        "SELECT id, first_name, last_name, email FROM users WHERE role = 'participant' ORDER BY id DESC"
+    ).fetchall()
     guides = db.execute(
         "SELECT u.*, GROUP_CONCAT(gl.language, ', ') AS languages "
         'FROM users u LEFT JOIN guide_languages gl ON u.id = gl.guide_id '
@@ -1092,7 +1098,13 @@ def admin():
             t_data.append({'tour': t, 'schedule': sched, 'stops': stops, 'res_count': res_count})
         guides_data.append({'guide': g, 'tours': t_data})
     db.close()
-    return render_template('admin.html', stats=stats, guides_data=guides_data)
+    return render_template(
+        'admin.html',
+        stats=stats,
+        admins=admins,
+        participants=participants,
+        guides_data=guides_data,
+    )
 
 
 # ── Error handlers ────────────────────────────────────────────────────────────
