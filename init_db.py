@@ -100,10 +100,10 @@ def seed():
         for day, t in days_times:
             db.execute('INSERT INTO tour_schedule (tour_id, day_of_week, start_time) VALUES (?,?,?)', (tid, day, t))
 
-    def add_photos(tid, count=5):
-        for i in range(count):
+    def add_photos(tid, filenames):
+        for i, filename in enumerate(filenames):
             db.execute('INSERT INTO tour_photos (tour_id, filename, order_num) VALUES (?,?,?)',
-                       (tid, 'placeholder', i))
+                       (tid, 'images/' + filename, i))
 
     # Tour 1 – Through Hadrian's Gate (Guide Gulnihal, English)
     t1 = add_tour(
@@ -117,7 +117,7 @@ def seed():
     add_stops(t1, ["Hadrian's Gate", 'Yivli Minaret Mosque', 'Kesik Minaret (Broken Minaret)',
                    'Hidirlik Tower', 'Kaleici Marina'])
     add_sched(t1, [('Monday', '09:00'), ('Wednesday', '09:00'), ('Friday', '09:00')])
-    add_photos(t1)
+    add_photos(t1, ['hadrian_1.jpg', 'hadrian2.jpg', 'hadrian3.jpg', 'hadrian4.jpg', 'hadrian5.jpeg'])
 
     # Tour 2 – Spanish tour by Leo Valdez
     t2 = add_tour(
@@ -133,7 +133,7 @@ def seed():
                    'Panorama de la Costa de Konyaalti',
                    'Regreso a Kaleici Marina'])
     add_sched(t2, [('Wednesday', '09:00')])
-    add_photos(t2)
+    add_photos(t2, ['waterfall1.jpg', 'waterfall2.jpeg', 'waterfall3.jpeg', 'waterfall4.jpg', 'waterfall5.jpg'])
 
     # Tour 3 – Italian tour by Maria Belluci
     t3 = add_tour(
@@ -147,7 +147,7 @@ def seed():
     add_stops(t3, ['Ristorante Seraser Fine Dining', 'Yemenli Meyhanesi',
                    'Ristorante 7 Mehmet', 'Ristorante Parlak'])
     add_sched(t3, [('Thursday', '18:00'), ('Sunday', '18:00')])
-    add_photos(t3)
+    add_photos(t3, ['food1.jpg', 'food2.jpg', 'food3.jpg', 'food4.jpg', 'food5.jpg'])
 
     # ── Reservations ──────────────────────────────────────────────────────────
 
@@ -206,7 +206,7 @@ def seed():
 
 
 if __name__ == '__main__':
-    os.makedirs(os.path.join('static', 'uploads', 'tour_photos'), exist_ok=True)
+    os.makedirs(os.path.join('static', 'images'), exist_ok=True)
     os.makedirs(os.path.join('static', 'uploads', 'reports'), exist_ok=True)
     create_tables()
     seed()

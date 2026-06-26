@@ -23,7 +23,7 @@
                     {% for photo in photos %}
                         <div class="carousel-item {% if ns.idx == 0 %}active{% endif %}">
                             {% if photo['filename'] != 'placeholder' %}
-                                <img src="{{ url_for('static', filename='uploads/' + photo['filename']) }}"
+                                <img src="{{ url_for('static', filename=image_path(photo['filename'])) }}"
                                      class="d-block w-100 tour-detail-photo" alt="Tour photo {{ ns.idx + 1 }}">
                             {% else %}
                                 <div class="tour-detail-photo tour-placeholder-img d-flex align-items-center justify-content-center">

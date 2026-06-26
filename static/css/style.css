@@ -153,7 +153,7 @@ body {
     align-items: center;
     background:
         linear-gradient(rgba(10,50,90,.62), rgba(10,50,90,.62)),
-        url('../uploads/tour_photos/antalya.jpg') center/cover no-repeat;
+        url('../images/antalya.jpg') center/cover no-repeat;
     padding: 4rem 0;
 }
 

@@ -189,7 +189,7 @@
                                 {% for photo in photos %}
                                     <div class="col-4 col-sm-3 col-md-2">
                                         {% if photo['filename'] != 'placeholder' %}
-                                            <img src="{{ url_for('static', filename='uploads/' + photo['filename']) }}"
+                                            <img src="{{ url_for('static', filename=image_path(photo['filename'])) }}"
                                                  class="img-thumbnail" alt="Tour photo">
                                         {% else %}
                                             <div class="img-thumbnail tour-placeholder-img d-flex align-items-center

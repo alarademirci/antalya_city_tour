@@ -83,7 +83,7 @@
                         <div class="card tour-card h-100 shadow-sm border-0">
                             <a href="{{ url_for('tour_detail', tour_id=t['id']) }}" class="tour-card-img-link">
                                 {% if item.photo and item.photo != 'placeholder' %}
-                                    <img src="{{ url_for('static', filename='uploads/' + item.photo) }}"
+                                    <img src="{{ url_for('static', filename=image_path(item.photo)) }}"
                                          class="card-img-top tour-card-img" alt="{{ t['title'] }}">
                                 {% else %}
                                     <div class="tour-card-img tour-placeholder-img d-flex align-items-center

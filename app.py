@@ -91,10 +91,15 @@ def save_upload(file, subfolder):
         return None
     ts = datetime.now().strftime('%Y%m%d%H%M%S%f')
     filename = ts + '_' + secure_filename(file.filename)
-    dest = os.path.join(app.config['UPLOAD_FOLDER'], subfolder)
+    if subfolder == 'images':
+        dest = os.path.join(BASE_DIR, 'static', 'images')
+        stored_path = f'images/{filename}'
+    else:
+        dest = os.path.join(app.config['UPLOAD_FOLDER'], subfolder)
+        stored_path = f'uploads/{subfolder}/{filename}'
     os.makedirs(dest, exist_ok=True)
     file.save(os.path.join(dest, filename))
-    return subfolder + '/' + filename
+    return stored_path
 
 
 # ── CSRF protection ───────────────────────────────────────────────────────────
@@ -108,6 +113,18 @@ def schedule_label(day_of_week, start_time, language):
     terms = SCHEDULE_TERMS.get(language) or SCHEDULE_TERMS['English']
     day_txt = terms['days'].get(day_of_week, day_of_week)
     return f"{terms['every']} {day_txt} {terms['at']} {start_time}"
+
+
+def image_path(filename):
+    if not filename or filename == 'placeholder':
+        return filename
+    cleaned = filename.replace('\\', '/')
+    if cleaned.startswith('images/'):
+        return cleaned
+    for prefix in ('uploads/tour_photos/', 'uploads/tours/', 'tour_photos/', 'tours/'):
+        if cleaned.startswith(prefix):
+            return 'images/' + cleaned[len(prefix):]
+    return 'images/' + cleaned.split('/')[-1]
 
 
 @app.before_request
@@ -125,6 +142,7 @@ def inject_globals():
         'csrf_token': get_csrf_token(),
         'current_year': datetime.now().year,
         'schedule_label': schedule_label,
+        'image_path': image_path,
     }
 
 
@@ -666,7 +684,7 @@ def create_tour():
                     db.execute('INSERT INTO tour_schedule (tour_id, day_of_week, start_time) VALUES (?,?,?)',
                                (tid, day, t))
                 for i, photo in enumerate(photos[:5]):
-                    fn = save_upload(photo, 'tour_photos')
+                    fn = save_upload(photo, 'images')
                     if fn:
                         db.execute('INSERT INTO tour_photos (tour_id, filename, order_num) VALUES (?,?,?)',
                                    (tid, fn, i))
@@ -772,7 +790,7 @@ def edit_tour(tour_id):
                 if new_photos:
                     cnt = db.execute('SELECT COUNT(*) AS c FROM tour_photos WHERE tour_id=?', (tour_id,)).fetchone()['c']
                     for i, photo in enumerate(new_photos):
-                        fn = save_upload(photo, 'tour_photos')
+                        fn = save_upload(photo, 'images')
                         if fn:
                             db.execute('INSERT INTO tour_photos (tour_id, filename, order_num) VALUES (?,?,?)',
                                        (tour_id, fn, cnt + i))
@@ -1095,7 +1113,7 @@ def too_large(e):
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 if __name__ == '__main__':
-    os.makedirs(os.path.join('static', 'uploads', 'tour_photos'), exist_ok=True)
+    os.makedirs(os.path.join('static', 'images'), exist_ok=True)
     os.makedirs(os.path.join('static', 'uploads', 'reports'), exist_ok=True)
     create_tables()
     app.run(debug=True)
