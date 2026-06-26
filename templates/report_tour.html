@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Post-Tour Report – Antalya City Tours{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('guide_profile') }}">My Profile</a></li>
+                    <li class="breadcrumb-item active">Report</li>
+                </ol>
+            </nav>
+
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-body p-4">
+                    <h1 class="h4 fw-bold mb-1">
+                        <i class="bi bi-clipboard-check text-primary me-2"></i>Post-Tour Report
+                    </h1>
+                    <p class="text-muted small mb-1">{{ tour['title'] }}</p>
+                    <p class="text-muted small mb-4">
+                        Date: <strong>{{ tour_date }}</strong>
+                        &nbsp;·&nbsp;
+                        Reserved participants: <strong>{{ total_reserved }}</strong>
+                    </p>
+
+                    <form method="post"
+                          action="{{ url_for('report_tour', tour_id=tour['id'], tour_date=tour_date) }}"
+                          enctype="multipart/form-data" novalidate>
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+
+                        <div class="mb-3">
+                            <label for="actual_participants" class="form-label">
+                                Actual Participants Who Attended <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" id="actual_participants" name="actual_participants"
+                                   class="form-control" required min="0"
+                                   value="{{ request.form.get('actual_participants', '') }}">
+                            <div class="form-text">Enter the real number of people who joined the tour.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="report_photo" class="form-label">
+                                Tour Evidence Photo
+                            </label>
+                            <input type="file" id="report_photo" name="report_photo"
+                                   class="form-control" accept="image/*">
+                            <div class="form-text">
+                                Upload a photo showing the participants as proof the tour took place.
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-upload me-2"></i>Submit Report
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <a href="{{ url_for('guide_profile') }}" class="btn btn-outline-secondary mt-3 w-100">
+                <i class="bi bi-arrow-left me-2"></i>Back to Profile
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

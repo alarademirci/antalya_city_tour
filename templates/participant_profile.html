@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}My Reservations – Antalya City Tours{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="h3 fw-bold mb-1">
+        <i class="bi bi-calendar-check text-primary me-2"></i>My Reservations
+    </h1>
+    <p class="text-muted mb-4">{{ current_user.full_name() }} &mdash; {{ current_user.email }}</p>
+
+    {% if res_data %}
+        <!-- Upcoming -->
+        {% set upcoming = res_data | selectattr('is_past', 'equalto', False) | list %}
+        {% set past = res_data | selectattr('is_past', 'equalto', True) | list %}
+
+        {% if upcoming %}
+            <h2 class="h5 fw-semibold mb-3">
+                <i class="bi bi-calendar-event text-primary me-2"></i>Upcoming Tours
+            </h2>
+            {% for item in upcoming %}
+                {% set res = item.res %}
+                <div class="card border-0 shadow-sm mb-3 rounded-3">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
+                            <div>
+                                <h3 class="h5 fw-bold mb-1">
+                                    <a href="{{ url_for('tour_detail', tour_id=res['tour_id']) }}"
+                                       class="text-decoration-none">{{ res['title'] }}</a>
+                                </h3>
+                                <p class="text-muted small mb-2">
+                                    <i class="bi bi-person me-1"></i>Guide: {{ res['guide_name'] }}
+                                </p>
+                                <ul class="list-unstyled small mb-0">
+                                    <li>
+                                        <i class="bi bi-calendar-event text-primary me-1"></i>
+                                        <strong>{{ res['tour_date'] }}</strong> at {{ res['start_time'] }}
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-geo-alt text-primary me-1"></i>
+                                        {{ res['meeting_point'] }}
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-clock text-primary me-1"></i>
+                                        {{ res['duration'] | duration_fmt }}
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-people text-primary me-1"></i>
+                                        {{ res['num_people'] }} person{% if res['num_people'] != 1 %}s{% endif %}
+                                        {% if item.guests %}
+                                            ({{ current_user.first_name }}
+                                            {% for g in item.guests %} + {{ g['first_name'] }} {{ g['last_name'] }}{% endfor %})
+                                        {% endif %}
+                                    </li>
+                                </ul>
+                            </div>
+                            {% if item.can_cancel %}
+                                <form method="post"
+                                      action="{{ url_for('cancel_reservation', res_id=res['id']) }}"
+                                      onsubmit="return confirm('Cancel this reservation?')">
+                                    <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-x-circle me-1"></i>Cancel
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="badge bg-secondary align-self-start">
+                                    <i class="bi bi-lock me-1"></i>Cannot cancel
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if past %}
+            <h2 class="h5 fw-semibold mt-5 mb-3">
+                <i class="bi bi-clock-history text-secondary me-2"></i>Past Tours
+            </h2>
+            {% for item in past %}
+                {% set res = item.res %}
+                <div class="card border-0 shadow-sm mb-3 rounded-3 opacity-75">
+                    <div class="card-body p-4">
+                        <h3 class="h5 fw-bold mb-1">
+                            <a href="{{ url_for('tour_detail', tour_id=res['tour_id']) }}"
+                               class="text-decoration-none text-muted">{{ res['title'] }}</a>
+                        </h3>
+                        <ul class="list-unstyled small mb-0 text-muted">
+                            <li><i class="bi bi-calendar-event me-1"></i>{{ res['tour_date'] }} at {{ res['start_time'] }}</li>
+                            <li><i class="bi bi-people me-1"></i>
+                                {{ res['num_people'] }} person{% if res['num_people'] != 1 %}s{% endif %}
+                                {% for g in item.guests %} + {{ g['first_name'] }} {{ g['last_name'] }}{% endfor %}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-map display-3 text-muted"></i>
+            <p class="lead mt-3 text-muted">You haven't made any reservations yet.</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary mt-2">
+                <i class="bi bi-compass me-2"></i>Browse Tours
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

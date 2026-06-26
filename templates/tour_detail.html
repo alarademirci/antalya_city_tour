@@ -1,0 +1,387 @@
+{% extends 'base.html' %}
+{% block title %}{{ tour['title'] }} – Antalya City Tours{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+    <!-- Back link -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Tours</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ tour['title'] }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-5">
+
+        <!-- Left: photos + core info -->
+        <div class="col-lg-7">
+            <!-- Photo carousel -->
+            <div id="tourCarousel" class="carousel slide rounded overflow-hidden shadow mb-4" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% set ns = namespace(idx=0) %}
+                    {% for photo in photos %}
+                        <div class="carousel-item {% if ns.idx == 0 %}active{% endif %}">
+                            {% if photo['filename'] != 'placeholder' %}
+                                <img src="{{ url_for('static', filename='uploads/' + photo['filename']) }}"
+                                     class="d-block w-100 tour-detail-photo" alt="Tour photo {{ ns.idx + 1 }}">
+                            {% else %}
+                                <div class="tour-detail-photo tour-placeholder-img d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-image text-white" style="font-size:3rem;opacity:.4"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% set ns.idx = ns.idx + 1 %}
+                    {% endfor %}
+                    {% if not photos %}
+                        <div class="carousel-item active">
+                            <div class="tour-detail-photo tour-placeholder-img d-flex align-items-center justify-content-center">
+                                <i class="bi bi-image text-white" style="font-size:3rem;opacity:.4"></i>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                {% if photos|length > 1 %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#tourCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#tourCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                {% endif %}
+            </div>
+
+            <!-- Title & meta -->
+            <span class="badge bg-primary mb-2">{{ tour['language'] }}</span>
+            <span class="badge text-bg-light border mb-2 ms-1">{{ tour['theme'] }}</span>
+            <h1 class="h2 fw-bold mb-1">{{ tour['title'] }}</h1>
+            <p class="text-muted mb-3">
+                <i class="bi bi-person-circle me-1"></i>
+                Guide: <strong>{{ tour['guide_name'] }}</strong>
+            </p>
+
+            <!-- Key details grid -->
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-sm-3">
+                    <div class="detail-tile">
+                        <i class="bi bi-clock detail-icon"></i>
+                        <span class="detail-label">Duration</span>
+                        <span class="detail-value">{{ tour['duration'] | duration_fmt }}</span>
+                    </div>
+                </div>
+                <div class="col-6 col-sm-3">
+                    <div class="detail-tile">
+                        <i class="bi bi-people detail-icon"></i>
+                        <span class="detail-label">Max group</span>
+                        <span class="detail-value">{{ tour['max_participants'] }}</span>
+                    </div>
+                </div>
+                <div class="col-6 col-sm-3">
+                    <div class="detail-tile">
+                        <i class="bi bi-translate detail-icon"></i>
+                        <span class="detail-label">Language</span>
+                        <span class="detail-value">{{ tour['language'] }}</span>
+                    </div>
+                </div>
+                <div class="col-6 col-sm-3">
+                    <div class="detail-tile">
+                        <i class="bi bi-tag detail-icon"></i>
+                        <span class="detail-label">Price</span>
+                        <span class="detail-value text-success fw-bold">Free</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Meeting point -->
+            <p class="mb-3">
+                <i class="bi bi-geo-alt-fill text-primary me-2"></i>
+                <strong>Meeting point:</strong> {{ tour['meeting_point'] }}
+            </p>
+
+            <!-- Weekly schedule -->
+            <p class="fw-semibold mb-1"><i class="bi bi-calendar-week text-primary me-2"></i>Weekly Schedule</p>
+            <ul class="list-unstyled ms-3 mb-4">
+                {% for s in schedule %}
+                    <li>
+                        <i class="bi bi-dot text-primary"></i>
+                        {{ s['day_of_week'] }} at {{ s['start_time'] }}
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <!-- Description -->
+            <h2 class="h5 fw-bold mb-2">About this Tour</h2>
+            <p class="text-secondary">{{ tour['description'] }}</p>
+
+            <!-- Stops -->
+            <h2 class="h5 fw-bold mt-4 mb-2">
+                <i class="bi bi-signpost-split text-primary me-2"></i>Itinerary Stops
+            </h2>
+            <ol class="stops-list ps-3">
+                {% for stop in stops %}
+                    <li>{{ stop['stop_name'] }}</li>
+                {% endfor %}
+            </ol>
+        </div>
+
+        <!-- Right: reservation panel -->
+        <div class="col-lg-5">
+            <div id="reserve-panel" class="reservation-panel p-4 rounded shadow-sm sticky-top" style="top:80px">
+                <h2 class="h5 fw-bold mb-3">
+                    <i class="bi bi-calendar-plus me-2 text-primary"></i>Reserve Your Place
+                </h2>
+
+                {% if current_user.is_authenticated and current_user.role == 'participant' %}
+                    {% if upcoming %}
+                        <form method="post" action="{{ url_for('reserve', tour_id=tour['id']) }}"
+                              id="reserveForm" novalidate>
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+                            <input type="hidden" name="start_time" id="startTimeInput">
+
+                            <!-- Date select -->
+                            <div class="mb-3">
+                                <label for="tourDateSelect" class="form-label fw-semibold">Select Date</label>
+                                <select id="tourDateSelect" name="tour_date" class="form-select" required>
+                                    <option value="">-- Choose a date --</option>
+                                    {% for d in upcoming %}
+                                        <option value="{{ d.date }}"
+                                                data-time="{{ d.start_time }}"
+                                                data-spots="{{ d.spots }}"
+                                                {% if d.spots == 0 %}disabled{% endif %}>
+                                            {{ d.display }}
+                                            {% if d.spots > 0 %}
+                                                ({{ d.spots }} spot{% if d.spots != 1 %}s{% endif %} left)
+                                            {% else %}
+                                                (Fully booked)
+                                            {% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Number of people -->
+                            <div class="mb-3">
+                                <label for="numPeople" class="form-label fw-semibold">Number of People</label>
+                                <select id="numPeople" name="num_people" class="form-select">
+                                    <option value="1">1 (just me)</option>
+                                </select>
+                                <div class="form-text" id="guestLimitText">You can add up to 3 guests.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <button type="button" id="toggleGuests" class="btn btn-outline-secondary btn-sm" disabled>
+                                    <i class="bi bi-person-plus me-1"></i>Would you like to add guests?
+                                </button>
+                            </div>
+
+                            <!-- Guest fields (shown dynamically) -->
+                            <div id="guestFieldsWrap" style="display:none">
+                                <p class="small text-muted">Max 3 guests. Capacity is checked for each selected date.</p>
+                                {% for i in range(1, 4) %}
+                                    <div class="guest-field mb-3" id="guest{{ i }}" style="display:none">
+                                        <label class="form-label fw-semibold">Guest {{ i }} Name</label>
+                                        <div class="row g-2">
+                                            <div class="col">
+                                                <input type="text" name="guest_fn_{{ i }}" class="form-control"
+                                                       placeholder="First name">
+                                            </div>
+                                            <div class="col">
+                                                <input type="text" name="guest_ln_{{ i }}" class="form-control"
+                                                       placeholder="Last name">
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div id="capacityNote" class="small text-danger mb-3" style="display:none"></div>
+
+                            <button type="submit" class="btn btn-primary w-100" id="reserveSubmitBtn">
+                                <i class="bi bi-check-circle me-2"></i>Confirm Reservation
+                            </button>
+                        </form>
+                    {% else %}
+                        <p class="text-muted">No upcoming dates available for this tour.</p>
+                    {% endif %}
+
+                {% elif current_user.is_authenticated and current_user.role == 'guide' %}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Guides cannot make reservations.
+                    </div>
+
+                {% elif current_user.is_authenticated and current_user.role == 'admin' %}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Admins cannot make reservations.
+                    </div>
+
+                {% else %}
+                    <!-- Guest / unauthenticated -->
+                    <p class="text-muted mb-3">Create a free account to reserve your spot.</p>
+                    <a href="{{ url_for('register') }}" class="btn btn-primary w-100 mb-2">
+                        <i class="bi bi-person-plus me-2"></i>Register to Reserve
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Already have an account? Log in
+                    </a>
+                {% endif %}
+
+                <!-- Upcoming dates quick view -->
+                {% if upcoming %}
+                    <hr>
+                    <p class="small fw-semibold text-muted mb-2">Upcoming dates</p>
+                    <ul class="list-unstyled small mb-0">
+                        {% for d in upcoming[:5] %}
+                            <li class="mb-1">
+                                <i class="bi bi-calendar-event text-primary me-1"></i>
+                                {{ d.display }}
+                                {% if d.spots <= 3 and d.spots > 0 %}
+                                    <span class="badge bg-warning text-dark ms-1">{{ d.spots }} left</span>
+                                {% elif d.spots == 0 %}
+                                    <span class="badge bg-secondary ms-1">Full</span>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const dateSelect = document.getElementById('tourDateSelect');
+    const startInput = document.getElementById('startTimeInput');
+    const numPeople  = document.getElementById('numPeople');
+    const toggleGuestsBtn = document.getElementById('toggleGuests');
+    const guestWrap = document.getElementById('guestFieldsWrap');
+    const guestLimitText = document.getElementById('guestLimitText');
+    const capacityNote = document.getElementById('capacityNote');
+    const reserveSubmitBtn = document.getElementById('reserveSubmitBtn');
+
+    let guestsPanelOpen = false;
+
+    function updateStartTime() {
+        const opt = dateSelect.options[dateSelect.selectedIndex];
+        startInput.value = opt ? (opt.dataset.time || '') : '';
+    }
+
+    function getSelectedSpots() {
+        if (!dateSelect || dateSelect.selectedIndex < 0) return 0;
+        const opt = dateSelect.options[dateSelect.selectedIndex];
+        return parseInt(opt.dataset.spots || '0', 10);
+    }
+
+    function updatePeopleOptions() {
+        const spots = getSelectedSpots();
+        if (!spots) {
+            numPeople.innerHTML = '<option value="1">1 (just me)</option>';
+            numPeople.disabled = true;
+            if (toggleGuestsBtn) toggleGuestsBtn.disabled = true;
+            guestsPanelOpen = false;
+            if (guestWrap) guestWrap.style.display = 'none';
+            if (capacityNote) {
+                capacityNote.style.display = dateSelect && dateSelect.value ? 'block' : 'none';
+                capacityNote.textContent = dateSelect && dateSelect.value ? 'No seats left for this date.' : '';
+            }
+            if (reserveSubmitBtn) reserveSubmitBtn.disabled = !!(dateSelect && dateSelect.value);
+            return;
+        }
+
+        const maxPeople = Math.min(4, spots);
+        const currentVal = parseInt(numPeople.value || '1', 10);
+        numPeople.innerHTML = '';
+        for (let i = 1; i <= maxPeople; i++) {
+            const opt = document.createElement('option');
+            opt.value = String(i);
+            opt.textContent = i === 1 ? '1 (just me)' : String(i);
+            numPeople.appendChild(opt);
+        }
+        numPeople.value = String(Math.min(currentVal, maxPeople));
+        numPeople.disabled = false;
+
+        const maxGuests = maxPeople - 1;
+        if (guestLimitText) {
+            guestLimitText.textContent = 'You can add up to ' + maxGuests + ' guest(s) for this date.';
+        }
+        if (toggleGuestsBtn) {
+            toggleGuestsBtn.disabled = maxGuests === 0;
+        }
+        if (capacityNote) {
+            capacityNote.style.display = 'none';
+            capacityNote.textContent = '';
+        }
+        if (reserveSubmitBtn) reserveSubmitBtn.disabled = false;
+
+        if (maxGuests === 0) {
+            guestsPanelOpen = false;
+            if (guestWrap) guestWrap.style.display = 'none';
+        }
+    }
+
+    function updateGuestFields() {
+        const n = parseInt(numPeople.value) || 1;
+        if (!guestsPanelOpen) {
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById('guest' + i).style.display = 'none';
+            }
+            return;
+        }
+        for (let i = 1; i <= 3; i++) {
+            document.getElementById('guest' + i).style.display = (i < n) ? 'block' : 'none';
+        }
+    }
+
+    if (dateSelect) {
+        dateSelect.addEventListener('change', function () {
+            updateStartTime();
+            updatePeopleOptions();
+            updateGuestFields();
+        });
+    }
+    if (numPeople)  numPeople.addEventListener('change', updateGuestFields);
+    if (toggleGuestsBtn) {
+        toggleGuestsBtn.addEventListener('click', function () {
+            guestsPanelOpen = !guestsPanelOpen;
+            if (guestWrap) guestWrap.style.display = guestsPanelOpen ? 'block' : 'none';
+            this.classList.toggle('btn-secondary', guestsPanelOpen);
+            this.classList.toggle('btn-outline-secondary', !guestsPanelOpen);
+            updateGuestFields();
+        });
+    }
+
+    // Front-end validation
+    const form = document.getElementById('reserveForm');
+    if (form) {
+        updatePeopleOptions();
+        form.addEventListener('submit', function (e) {
+            if (!dateSelect.value) {
+                e.preventDefault();
+                dateSelect.classList.add('is-invalid');
+                return;
+            }
+            const spots = getSelectedSpots();
+            if (spots <= 0) {
+                e.preventDefault();
+                return;
+            }
+            const n = parseInt(numPeople.value) || 1;
+            for (let i = 1; i < n; i++) {
+                const fn = form.querySelector('[name="guest_fn_' + i + '"]');
+                const ln = form.querySelector('[name="guest_ln_' + i + '"]');
+                if (!fn.value.trim() || !ln.value.trim()) {
+                    e.preventDefault();
+                    fn.classList.add('is-invalid');
+                    ln.classList.add('is-invalid');
+                }
+            }
+        });
+        dateSelect.addEventListener('change', function () { this.classList.remove('is-invalid'); });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,294 @@
+/* ═══════════════════════════════════════════════════════════
+   Antalya City Tours – Custom Styles
+   Palette: sea blue #1a6faf | sunset orange #f5823a | cream #faf7f2
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── CSS Variables ───────────────────────────────────────── */
+:root {
+    --primary:    #1a6faf;
+    --primary-dk: #145a8e;
+    --accent:     #f5823a;
+    --accent-dk:  #d96920;
+    --bg:         #faf7f2;
+    --text:       #2d3436;
+    --muted:      #636e72;
+    --card-bg:    #ffffff;
+    --border:     #e0d9d0;
+    --radius:     0.75rem;
+    --shadow:     0 4px 20px rgba(0,0,0,.08);
+}
+
+/* ── Base ────────────────────────────────────────────────── */
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+}
+
+/* Override Bootstrap primary */
+.btn-primary,
+.bg-primary {
+    background-color: var(--primary) !important;
+    border-color:     var(--primary) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--primary-dk) !important;
+    border-color:     var(--primary-dk) !important;
+}
+
+.text-primary { color: var(--primary) !important; }
+
+/* Accent button */
+.btn-accent {
+    background-color: var(--accent);
+    border-color:     var(--accent);
+    color: #fff;
+    font-weight: 600;
+}
+
+.btn-accent:hover,
+.btn-accent:focus {
+    background-color: var(--accent-dk);
+    border-color:     var(--accent-dk);
+    color: #fff;
+}
+
+/* ── Navbar ──────────────────────────────────────────────── */
+.site-nav {
+    background: linear-gradient(135deg, var(--primary) 0%, #0e4f80 100%);
+    box-shadow: 0 2px 12px rgba(0,0,0,.15);
+}
+
+.site-nav .navbar-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: .5px;
+}
+
+.site-nav .nav-link {
+    font-weight: 500;
+    border-radius: 0.4rem;
+    padding: .35rem .7rem;
+    transition: background .18s;
+}
+
+.site-nav .nav-link:hover {
+    background: rgba(255,255,255,.12);
+}
+
+/* ── Avatar circle ───────────────────────────────────────── */
+.avatar-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.25);
+    color: #fff;
+    font-weight: 700;
+    font-size: .85rem;
+    text-transform: uppercase;
+}
+
+.avatar-lg {
+    width: 52px;
+    height: 52px;
+    background: var(--primary);
+    font-size: 1.3rem;
+}
+
+/* ── Hero ────────────────────────────────────────────────── */
+.hero-section {
+    position: relative;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    background:
+        linear-gradient(160deg, rgba(10,50,90,.72) 0%, rgba(245,130,58,.40) 100%),
+        url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=80') center/cover no-repeat;
+    padding: 4rem 0;
+}
+
+.hero-overlay { display: none; } /* gradient already in background shorthand */
+
+/* ── Filter bar ──────────────────────────────────────────── */
+.filter-bar {
+    z-index: 100;
+    border-bottom: 1px solid var(--border);
+}
+
+/* ── Tour cards ──────────────────────────────────────────── */
+.tour-card {
+    border-radius: var(--radius) !important;
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+}
+
+.tour-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow) !important;
+}
+
+.tour-card-img-link {
+    position: relative;
+    display: block;
+}
+
+.tour-card-img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.tour-placeholder-img {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+}
+
+.lang-badge {
+    position: absolute;
+    top: .6rem;
+    right: .6rem;
+    background: rgba(26,111,175,.85) !important;
+    backdrop-filter: blur(4px);
+    font-size: .75rem;
+    padding: .25em .6em;
+}
+
+/* ── Tour detail ─────────────────────────────────────────── */
+.tour-detail-photo {
+    width: 100%;
+    height: 420px;
+    object-fit: cover;
+}
+
+.detail-tile {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: .75rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+}
+
+.detail-icon {
+    font-size: 1.4rem;
+    color: var(--primary);
+}
+
+.detail-label {
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+}
+
+.detail-value {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text);
+}
+
+.stops-list li {
+    margin-bottom: .3rem;
+}
+
+/* ── Reservation panel ───────────────────────────────────── */
+.reservation-panel {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+}
+
+/* ── Schedule day blocks ─────────────────────────────────── */
+.schedule-day {
+    background: var(--card-bg);
+    transition: border-color .15s;
+}
+
+.schedule-day:has(.day-check:checked) {
+    border-color: var(--primary) !important;
+    background: #eef5fc;
+}
+
+/* ── Guide profile ───────────────────────────────────────── */
+.btn-xs {
+    font-size: .75rem;
+    padding: .2rem .6rem;
+}
+
+/* ── Register type cards ─────────────────────────────────── */
+.register-type-card {
+    border-radius: var(--radius) !important;
+    transition: transform .2s, box-shadow .2s;
+    cursor: default;
+}
+
+.register-type-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow) !important;
+}
+
+.register-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), #3b9fd8);
+    color: #fff;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.register-icon-accent {
+    background: linear-gradient(135deg, var(--accent), #faa46c);
+}
+
+/* ── Admin stats ─────────────────────────────────────────── */
+.stat-card {
+    border-radius: var(--radius) !important;
+}
+
+.stat-icon {
+    font-size: 2rem;
+    margin-bottom: .25rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+/* ── Footer ──────────────────────────────────────────────── */
+.site-footer {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #ccc;
+}
+
+/* ── Utilities ───────────────────────────────────────────── */
+.card {
+    border-radius: var(--radius) !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 .2rem rgba(26,111,175,.2);
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    color: var(--muted);
+}

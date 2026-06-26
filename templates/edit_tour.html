@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+{% block title %}Edit Tour – Antalya City Tours{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('guide_profile') }}">My Profile</a></li>
+                    <li class="breadcrumb-item active">Edit: {{ tour['title'] }}</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <h1 class="h3 fw-bold mb-0">Edit Tour</h1>
+                {% if locked %}
+                    <span class="badge bg-warning text-dark">
+                        <i class="bi bi-lock-fill me-1"></i>
+                        Core fields locked (reservations exist)
+                    </span>
+                {% endif %}
+            </div>
+
+            {% if locked %}
+                <div class="alert alert-info mb-4">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Participants have already reserved this tour. The weekly schedule, meeting point,
+                    duration, language, theme and max participants <strong>cannot be changed</strong>.
+                    You may still edit the title, description, stops and add new photos.
+                </div>
+            {% endif %}
+
+            <form method="post" action="{{ url_for('edit_tour', tour_id=tour['id']) }}"
+                enctype="multipart/form-data" id="editForm" data-locked="{{ 1 if locked else 0 }}" novalidate>
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+
+                <!-- Basic info -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h2 class="h5 fw-bold mb-3">Basic Information</h2>
+
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Tour Title <span class="text-danger">*</span></label>
+                            <input type="text" id="title" name="title" class="form-control"
+                                   required maxlength="200"
+                                   value="{{ request.form.get('title', tour['title']) }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">
+                                Description <span class="text-danger">*</span>
+                            </label>
+                            <textarea id="description" name="description" class="form-control" rows="4" required>{{ request.form.get('description', tour['description']) }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="meeting_point" class="form-label">
+                                Meeting Point <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" id="meeting_point" name="meeting_point"
+                                   class="form-control" required maxlength="300"
+                                   value="{{ request.form.get('meeting_point', tour['meeting_point']) }}"
+                                   {% if locked %}readonly{% endif %}>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-sm-4">
+                                <label for="duration" class="form-label">Duration (min)</label>
+                                <input type="number" id="duration" name="duration"
+                                       class="form-control" required min="15" max="600"
+                                       value="{{ request.form.get('duration', tour['duration']) }}"
+                                       {% if locked %}readonly{% endif %}>
+                            </div>
+                            <div class="col-sm-4">
+                                <label for="language" class="form-label">Language</label>
+                                <select id="language" name="language" class="form-select" required
+                                        {% if locked %}disabled{% endif %}>
+                                    {% for lang in languages %}
+                                        <option value="{{ lang }}"
+                                                {% if (request.form.get('language') or tour['language']) == lang %}selected{% endif %}>
+                                            {{ lang }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                {% if locked %}
+                                    <input type="hidden" name="language" value="{{ tour['language'] }}">
+                                {% endif %}
+                            </div>
+                            <div class="col-sm-4">
+                                <label for="theme" class="form-label">Theme</label>
+                                <select id="theme" name="theme" class="form-select" required
+                                        {% if locked %}disabled{% endif %}>
+                                    {% for theme in themes %}
+                                        <option value="{{ theme }}"
+                                                {% if (request.form.get('theme') or tour['theme']) == theme %}selected{% endif %}>
+                                            {{ theme }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                {% if locked %}
+                                    <input type="hidden" name="theme" value="{{ tour['theme'] }}">
+                                {% endif %}
+                            </div>
+                            <div class="col-sm-4">
+                                <label for="max_participants" class="form-label">Max Participants</label>
+                                <input type="number" id="max_participants" name="max_participants"
+                                       class="form-control" required min="1" max="200"
+                                       value="{{ request.form.get('max_participants', tour['max_participants']) }}"
+                                       {% if locked %}readonly{% endif %}>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weekly schedule -->
+                <div class="card border-0 shadow-sm mb-4 {% if locked %}opacity-75{% endif %}">
+                    <div class="card-body p-4">
+                        <h2 class="h5 fw-bold mb-1">
+                            Weekly Schedule
+                            {% if locked %}<span class="badge bg-secondary ms-2">Locked</span>{% endif %}
+                        </h2>
+                        <p class="text-muted small mb-3">
+                            {% if locked %}
+                                Schedule cannot be modified once reservations exist.
+                            {% else %}
+                                Check the days this tour runs and set the start time for each.
+                            {% endif %}
+                        </p>
+                        <div class="row g-2">
+                            {% for day in days %}
+                                <div class="col-sm-6 col-md-4">
+                                    <div class="schedule-day border rounded p-2 {% if locked %}bg-light{% endif %}">
+                                        <div class="form-check mb-1">
+                                            <input class="form-check-input day-check" type="checkbox"
+                                                   name="schedule_days" value="{{ day }}"
+                                                   id="day_{{ day }}"
+                                                   {% if day in sched_dict %}checked{% endif %}
+                                                   {% if locked %}disabled{% endif %}>
+                                            <label class="form-check-label fw-semibold" for="day_{{ day }}">{{ day }}</label>
+                                        </div>
+                                        <input type="time" name="time_{{ day }}"
+                                               id="time_{{ day }}" class="form-control form-control-sm"
+                                               value="{{ sched_dict.get(day, '') }}"
+                                               {% if day not in sched_dict %}disabled{% endif %}
+                                               {% if locked %}readonly{% endif %}>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stops -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h2 class="h5 fw-bold mb-1">Itinerary Stops <span class="text-danger">*</span></h2>
+                        <p class="text-muted small mb-3">At least 4 stops required.</p>
+                        <div id="stopsContainer">
+                            {% set prev = request.form.getlist('stop') %}
+                            {% set src = prev if prev else stops %}
+                            {% for item in src %}
+                                <div class="input-group mb-2 stop-row">
+                                    <span class="input-group-text stop-num">{{ loop.index }}</span>
+                                    <input type="text" name="stop" class="form-control"
+                                           placeholder="Stop name"
+                                           value="{{ item if item is string else item['stop_name'] }}"
+                                           required>
+                                    {% if loop.index > 4 %}
+                                        <button type="button" class="btn btn-outline-danger remove-stop">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" id="addStop" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-plus-circle me-1"></i>Add Stop
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Existing photos -->
+                {% if photos %}
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h2 class="h5 fw-bold mb-3">Current Photos</h2>
+                            <div class="row g-2">
+                                {% for photo in photos %}
+                                    <div class="col-4 col-sm-3 col-md-2">
+                                        {% if photo['filename'] != 'placeholder' %}
+                                            <img src="{{ url_for('static', filename='uploads/' + photo['filename']) }}"
+                                                 class="img-thumbnail" alt="Tour photo">
+                                        {% else %}
+                                            <div class="img-thumbnail tour-placeholder-img d-flex align-items-center
+                                                        justify-content-center" style="height:80px">
+                                                <i class="bi bi-image text-white" style="opacity:.4"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Add new photos -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h2 class="h5 fw-bold mb-1">Add More Photos</h2>
+                        <p class="text-muted small mb-3">
+                            Upload additional photos (JPG, PNG, GIF or WebP).
+                        </p>
+                        <input type="file" name="new_photos" class="form-control"
+                               accept="image/*" multiple>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary px-5">
+                        <i class="bi bi-check-circle me-2"></i>Save Changes
+                    </button>
+                    <a href="{{ url_for('guide_profile') }}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const editForm = document.getElementById('editForm');
+    const isLocked = editForm ? editForm.dataset.locked === '1' : false;
+    if (!isLocked) {
+        document.querySelectorAll('.day-check').forEach(function (cb) {
+            cb.addEventListener('change', function () {
+                const t = document.getElementById('time_' + this.value);
+                t.disabled = !this.checked;
+                if (!this.checked) t.value = '';
+            });
+        });
+    }
+
+    let stopCount = document.querySelectorAll('.stop-row').length;
+    document.getElementById('addStop').addEventListener('click', function () {
+        stopCount++;
+        const row = document.createElement('div');
+        row.className = 'input-group mb-2 stop-row';
+        row.innerHTML =
+            '<span class="input-group-text stop-num">' + stopCount + '</span>' +
+            '<input type="text" name="stop" class="form-control" placeholder="Stop name">' +
+            '<button type="button" class="btn btn-outline-danger remove-stop">' +
+            '<i class="bi bi-x-lg"></i></button>';
+        document.getElementById('stopsContainer').appendChild(row);
+        row.querySelector('.remove-stop').addEventListener('click', function () {
+            this.closest('.stop-row').remove();
+            renumber();
+        });
+        renumber();
+    });
+
+    document.querySelectorAll('.remove-stop').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            this.closest('.stop-row').remove();
+            renumber();
+        });
+    });
+
+    function renumber() {
+        document.querySelectorAll('.stop-num').forEach(function (s, i) { s.textContent = i + 1; });
+    }
+</script>
+{% endblock %}

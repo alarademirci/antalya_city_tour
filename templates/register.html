@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Register – Antalya City Tours{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="h3 fw-bold text-center mb-2">Create an Account</h1>
+            <p class="text-muted text-center mb-5">Choose the account type that fits you best.</p>
+
+            <div class="row g-4">
+                <!-- Guide card -->
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100 register-type-card">
+                        <div class="card-body text-center p-4">
+                            <div class="register-icon mb-3">
+                                <i class="bi bi-person-badge-fill"></i>
+                            </div>
+                            <h2 class="h5 fw-bold">I'm a Guide</h2>
+                            <p class="text-muted small">
+                                Create and manage Free Walking Tours in Antalya.
+                                Share your local knowledge with visitors from around the world.
+                            </p>
+                            <a href="{{ url_for('register_guide') }}" class="btn btn-primary mt-2 px-4">
+                                Register as Guide
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Participant card -->
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100 register-type-card">
+                        <div class="card-body text-center p-4">
+                            <div class="register-icon register-icon-accent mb-3">
+                                <i class="bi bi-backpack4-fill"></i>
+                            </div>
+                            <h2 class="h5 fw-bold">I'm a Traveller</h2>
+                            <p class="text-muted small">
+                                Browse Antalya's best free walking tours and reserve your spot.
+                                Explore history, food, legends and more.
+                            </p>
+                            <a href="{{ url_for('register_participant') }}" class="btn btn-accent mt-2 px-4">
+                                Register as Traveller
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-center small mt-4">
+                Already have an account? <a href="{{ url_for('login') }}">Log in</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

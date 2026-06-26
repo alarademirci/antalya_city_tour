@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Reservations: {{ tour['title'] }} – Antalya City Tours{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('guide_profile') }}">My Profile</a></li>
+            <li class="breadcrumb-item active">Reservations: {{ tour['title'] }}</li>
+        </ol>
+    </nav>
+
+    <h1 class="h3 fw-bold mb-1">{{ tour['title'] }}</h1>
+    <p class="text-muted mb-4">All reservations for this tour</p>
+
+    {% if res_data %}
+        {% set current_date = '' %}
+        {% for item in res_data %}
+            {% set res = item.res %}
+            {% if res['tour_date'] != current_date %}
+                {% if not loop.first %}</tbody></table></div>{% endif %}
+                <h2 class="h5 fw-semibold mt-4 mb-2">
+                    <i class="bi bi-calendar-event text-primary me-2"></i>
+                    {{ res['tour_date'] }} at {{ res['start_time'] }}
+                    {% if item.report %}
+                        <span class="badge bg-success ms-2">
+                            <i class="bi bi-check2 me-1"></i>Reported – {{ item.report['actual_participants'] }} attended
+                        </span>
+                    {% endif %}
+                </h2>
+                <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Participant</th>
+                            <th>People</th>
+                            <th>Additional Guests</th>
+                            <th>Booked At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                {% set current_date = res['tour_date'] %}
+            {% endif %}
+            <tr>
+                <td>{{ res['participant_name'] }}</td>
+                <td>{{ res['num_people'] }}</td>
+                <td>
+                    {% if item.guests %}
+                        {% for g in item.guests %}{{ g['first_name'] }} {{ g['last_name'] }}{% if not loop.last %}, {% endif %}{% endfor %}
+                    {% else %}
+                        <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
+                <td class="text-muted small">{{ res['created_at'][:16] }}</td>
+            </tr>
+        {% endfor %}
+        </tbody></table></div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-calendar-x display-3 text-muted"></i>
+            <p class="lead mt-3 text-muted">No reservations yet for this tour.</p>
+        </div>
+    {% endif %}
+
+    <a href="{{ url_for('guide_profile') }}" class="btn btn-outline-secondary mt-4">
+        <i class="bi bi-arrow-left me-2"></i>Back to Profile
+    </a>
+</div>
+{% endblock %}

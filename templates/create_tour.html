@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+{% block title %}Create Tour – Antalya City Tours{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('guide_profile') }}">My Profile</a></li>
+                    <li class="breadcrumb-item active">Create Tour</li>
+                </ol>
+            </nav>
+
+            <h1 class="h3 fw-bold mb-4">Create a New Tour</h1>
+
+            <form method="post" action="{{ url_for('create_tour') }}"
+                  enctype="multipart/form-data" id="tourForm" novalidate>
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+
+                <!-- Basic info -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h2 class="h5 fw-bold mb-3">Basic Information</h2>
+
+                        <div class="mb-3">
+                            <label class="form-label">Guide (creator and manager)</label>
+                            <input type="text" class="form-control" value="{{ current_user.full_name() }} ({{ current_user.email }})" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Tour Title <span class="text-danger">*</span></label>
+                            <input type="text" id="title" name="title" class="form-control"
+                                   required maxlength="200"
+                                   value="{{ request.form.get('title', '') }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">
+                                Description <span class="text-danger">*</span>
+                            </label>
+                            <textarea id="description" name="description" class="form-control"
+                                      rows="4" required>{{ request.form.get('description', '') }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="meeting_point" class="form-label">
+                                Meeting Point <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" id="meeting_point" name="meeting_point"
+                                   class="form-control" required maxlength="300"
+                                   value="{{ request.form.get('meeting_point', '') }}">
+                            <div class="form-text">Describe the exact location where participants should gather.</div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-sm-4">
+                                <label for="duration" class="form-label">
+                                    Duration (min) <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" id="duration" name="duration"
+                                       class="form-control" required min="15" max="600"
+                                       value="{{ request.form.get('duration', '') }}">
+                            </div>
+                            <div class="col-sm-4">
+                                <label for="language" class="form-label">
+                                    Language <span class="text-danger">*</span>
+                                </label>
+                                <select id="language" name="language" class="form-select" required>
+                                    <option value="">-- Select --</option>
+                                    {% for lang in languages %}
+                                        <option value="{{ lang }}"
+                                                {% if request.form.get('language') == lang %}selected{% endif %}>
+                                            {{ lang }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-sm-4">
+                                <label for="theme" class="form-label">
+                                    Theme <span class="text-danger">*</span>
+                                </label>
+                                <select id="theme" name="theme" class="form-select" required>
+                                    <option value="">-- Select --</option>
+                                    {% for theme in themes %}
+                                        <option value="{{ theme }}"
+                                                {% if request.form.get('theme') == theme %}selected{% endif %}>
+                                            {{ theme }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-sm-4">
+                                <label for="max_participants" class="form-label">
+                                    Max Participants <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" id="max_participants" name="max_participants"
+                                       class="form-control" required min="1" max="200"
+                                       value="{{ request.form.get('max_participants', '') }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weekly schedule -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h2 class="h5 fw-bold mb-1">Weekly Schedule <span class="text-danger">*</span></h2>
+                        <p class="text-muted small mb-3">Check the days when this tour runs and set the start time.</p>
+                        <div class="row g-2">
+                            {% for day in days %}
+                                <div class="col-sm-6 col-md-4">
+                                    <div class="schedule-day border rounded p-2">
+                                        <div class="form-check mb-1">
+                                            <input class="form-check-input day-check" type="checkbox"
+                                                   name="schedule_days" value="{{ day }}"
+                                                   id="day_{{ day }}"
+                                                   {% if day in request.form.getlist('schedule_days') %}checked{% endif %}>
+                                            <label class="form-check-label fw-semibold" for="day_{{ day }}">{{ day }}</label>
+                                        </div>
+                                        <input type="time" name="time_{{ day }}"
+                                               id="time_{{ day }}" class="form-control form-control-sm"
+                                               value="{{ request.form.get('time_' + day, '') }}"
+                                               {% if day not in request.form.getlist('schedule_days') %}disabled{% endif %}>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stops -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h2 class="h5 fw-bold mb-1">
+                            Itinerary Stops <span class="text-danger">*</span>
+                        </h2>
+                        <p class="text-muted small mb-3">Add at least 4 stops (places visited during the tour).</p>
+                        <div id="stopsContainer">
+                            {% set prev_stops = request.form.getlist('stop') %}
+                            {% set min_stops = 4 %}
+                            {% for i in range([prev_stops|length, min_stops]|max) %}
+                                <div class="input-group mb-2 stop-row">
+                                    <span class="input-group-text stop-num">{{ loop.index }}</span>
+                                    <input type="text" name="stop" class="form-control"
+                                           placeholder="Stop name"
+                                           value="{{ prev_stops[loop.index0] if loop.index0 < prev_stops|length else '' }}"
+                                           required>
+                                    {% if loop.index > 4 %}
+                                        <button type="button" class="btn btn-outline-danger remove-stop">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" id="addStop" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-plus-circle me-1"></i>Add Another Stop
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Photos -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h2 class="h5 fw-bold mb-1">
+                            Promotional Photos <span class="text-danger">*</span>
+                        </h2>
+                        <p class="text-muted small mb-3">Upload exactly 5 photos (JPG, PNG, GIF or WebP, max 16 MB each).</p>
+                        <div class="row g-3">
+                            {% for i in range(1, 6) %}
+                                <div class="col-sm-6 col-md-4">
+                                    <label for="photo{{ i }}" class="form-label small">Photo {{ i }}</label>
+                                    <input type="file" id="photo{{ i }}" name="photos"
+                                           class="form-control form-control-sm photo-input"
+                                           accept="image/*" required>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary px-5">
+                        <i class="bi bi-check-circle me-2"></i>Create Tour
+                    </button>
+                    <a href="{{ url_for('guide_profile') }}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Toggle time input when day checkbox changes
+    document.querySelectorAll('.day-check').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+            const timeInput = document.getElementById('time_' + this.value);
+            timeInput.disabled = !this.checked;
+            if (!this.checked) timeInput.value = '';
+        });
+    });
+
+    // Dynamic stops
+    let stopCount = document.querySelectorAll('.stop-row').length;
+    document.getElementById('addStop').addEventListener('click', function () {
+        stopCount++;
+        const row = document.createElement('div');
+        row.className = 'input-group mb-2 stop-row';
+        row.innerHTML =
+            '<span class="input-group-text stop-num">' + stopCount + '</span>' +
+            '<input type="text" name="stop" class="form-control" placeholder="Stop name">' +
+            '<button type="button" class="btn btn-outline-danger remove-stop">' +
+            '<i class="bi bi-x-lg"></i></button>';
+        document.getElementById('stopsContainer').appendChild(row);
+        attachRemoveListener(row.querySelector('.remove-stop'));
+        renumberStops();
+    });
+
+    function attachRemoveListener(btn) {
+        btn.addEventListener('click', function () {
+            this.closest('.stop-row').remove();
+            renumberStops();
+            stopCount--;
+        });
+    }
+
+    function renumberStops() {
+        document.querySelectorAll('.stop-num').forEach(function (span, i) {
+            span.textContent = i + 1;
+        });
+    }
+
+    document.querySelectorAll('.remove-stop').forEach(attachRemoveListener);
+
+    // Front-end: require at least one day checked
+    document.getElementById('tourForm').addEventListener('submit', function (e) {
+        const checked = document.querySelectorAll('input[name="schedule_days"]:checked');
+        if (checked.length === 0) {
+            e.preventDefault();
+            alert('Please select at least one scheduled day.');
+            return;
+        }
+        // Require time for each checked day
+        let missingTime = false;
+        checked.forEach(function (cb) {
+            const t = document.getElementById('time_' + cb.value);
+            if (!t.value) missingTime = true;
+        });
+        if (missingTime) {
+            e.preventDefault();
+            alert('Please set a start time for each selected day.');
+        }
+    });
+</script>
+{% endblock %}

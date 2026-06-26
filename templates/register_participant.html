@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Register as Traveller – Antalya City Tours{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('register') }}">Register</a></li>
+                    <li class="breadcrumb-item active">Traveller</li>
+                </ol>
+            </nav>
+
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-body p-4">
+                    <h1 class="h4 fw-bold mb-1">Register as a Traveller</h1>
+                    <p class="text-muted small mb-4">Reserve your spots on Antalya's best free tours.</p>
+
+                    <form method="post" action="{{ url_for('register_participant') }}" novalidate>
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+                                <input type="text" id="first_name" name="first_name" class="form-control"
+                                       required maxlength="100"
+                                       value="{{ request.form.get('first_name', '') }}" autofocus>
+                            </div>
+                            <div class="col-sm-6">
+                                <label for="last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
+                                <input type="text" id="last_name" name="last_name" class="form-control"
+                                       required maxlength="100"
+                                       value="{{ request.form.get('last_name', '') }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email address <span class="text-danger">*</span></label>
+                            <input type="email" id="email" name="email" class="form-control"
+                                   required autocomplete="email"
+                                   value="{{ request.form.get('email', '') }}">
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-sm-6">
+                                <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                                <input type="password" id="password" name="password" class="form-control"
+                                       required minlength="8" autocomplete="new-password">
+                                <div class="form-text">At least 8 characters.</div>
+                            </div>
+                            <div class="col-sm-6">
+                                <label for="password2" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                                <input type="password" id="password2" name="password2" class="form-control"
+                                       required minlength="8" autocomplete="new-password">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-accent w-100">
+                            <i class="bi bi-person-check me-2"></i>Create Traveller Account
+                        </button>
+                    </form>
+
+                    <p class="text-center small mt-3 mb-0">
+                        Already registered? <a href="{{ url_for('login') }}">Log in</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const p1 = document.getElementById('password');
+    const p2 = document.getElementById('password2');
+    function checkPasswords() {
+        p2.setCustomValidity(p1.value !== p2.value ? 'Passwords do not match.' : '');
+    }
+    p1.addEventListener('input', checkPasswords);
+    p2.addEventListener('input', checkPasswords);
+</script>
+{% endblock %}

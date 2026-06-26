@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}{{ code }} – Antalya City Tours{% endblock %}
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="error-icon display-1 text-muted mb-3">
+        {% if code == 404 %}
+            <i class="bi bi-map"></i>
+        {% elif code == 403 %}
+            <i class="bi bi-lock"></i>
+        {% else %}
+            <i class="bi bi-exclamation-triangle"></i>
+        {% endif %}
+    </div>
+    <h1 class="display-4 fw-bold">{{ code }}</h1>
+    <p class="lead text-muted">{{ message }}</p>
+    <a href="{{ url_for('index') }}" class="btn btn-primary mt-3">
+        <i class="bi bi-house me-1"></i>Back to Home
+    </a>
+</div>
+{% endblock %}

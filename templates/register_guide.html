@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}Register as Guide – Antalya City Tours{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('register') }}">Register</a></li>
+                    <li class="breadcrumb-item active">Guide</li>
+                </ol>
+            </nav>
+
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-body p-4">
+                    <h1 class="h4 fw-bold mb-1">Register as a Guide</h1>
+                    <p class="text-muted small mb-4">Share your Antalya expertise with the world.</p>
+
+                    <form method="post" action="{{ url_for('register_guide') }}" novalidate>
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+                                <input type="text" id="first_name" name="first_name" class="form-control"
+                                       required maxlength="100"
+                                       value="{{ request.form.get('first_name', '') }}" autofocus>
+                            </div>
+                            <div class="col-sm-6">
+                                <label for="last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
+                                <input type="text" id="last_name" name="last_name" class="form-control"
+                                       required maxlength="100"
+                                       value="{{ request.form.get('last_name', '') }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3 mt-3">
+                            <label for="email" class="form-label">Email address <span class="text-danger">*</span></label>
+                            <input type="email" id="email" name="email" class="form-control"
+                                   required autocomplete="email"
+                                   value="{{ request.form.get('email', '') }}">
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                                <input type="password" id="password" name="password" class="form-control"
+                                       required minlength="8" autocomplete="new-password">
+                                <div class="form-text">At least 8 characters.</div>
+                            </div>
+                            <div class="col-sm-6">
+                                <label for="password2" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                                <input type="password" id="password2" name="password2" class="form-control"
+                                       required minlength="8" autocomplete="new-password">
+                            </div>
+                        </div>
+
+                        <fieldset class="mb-4">
+                            <legend class="form-label">
+                                Languages you speak <span class="text-danger">*</span>
+                            </legend>
+                            <div class="row row-cols-2 row-cols-sm-3 g-2">
+                                {% for lang in languages %}
+                                    <div class="col">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox"
+                                                   name="languages" value="{{ lang }}"
+                                                   id="lang_{{ lang }}"
+                                                   {% if lang in request.form.getlist('languages') %}checked{% endif %}>
+                                            <label class="form-check-label" for="lang_{{ lang }}">{{ lang }}</label>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </fieldset>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-person-check me-2"></i>Create Guide Account
+                        </button>
+                    </form>
+
+                    <p class="text-center small mt-3 mb-0">
+                        Already registered? <a href="{{ url_for('login') }}">Log in</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Confirm passwords must match
+    const p1 = document.getElementById('password');
+    const p2 = document.getElementById('password2');
+    function checkPasswords() {
+        if (p1.value !== p2.value) {
+            p2.setCustomValidity('Passwords do not match.');
+        } else {
+            p2.setCustomValidity('');
+        }
+    }
+    p1.addEventListener('input', checkPasswords);
+    p2.addEventListener('input', checkPasswords);
+
+    // At least one language must be checked
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function (e) {
+        const checked = document.querySelectorAll('input[name="languages"]:checked');
+        if (checked.length === 0) {
+            e.preventDefault();
+            alert('Please select at least one language.');
+        }
+    });
+</script>
+{% endblock %}

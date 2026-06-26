@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}Explore Antalya – Free Walking Tours{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<header class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="container position-relative text-white text-center py-5">
+        <h1 class="display-4 fw-bold mb-2">Discover Antalya on Foot</h1>
+        <p class="lead mb-4">
+            Free Walking Tours led by passionate local guides.<br>
+            Pay what you feel — explore what you love.
+        </p>
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('register') }}" class="btn btn-accent btn-lg me-2">Join a Tour</a>
+            <a href="#tours" class="btn btn-outline-light btn-lg">See All Tours</a>
+        {% endif %}
+    </div>
+</header>
+
+<!-- Filters -->
+<section class="filter-bar py-3 bg-white shadow-sm sticky-top" id="tours">
+    <div class="container">
+        <form method="get" action="{{ url_for('index') }}" class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label for="fDate" class="form-label small fw-semibold">Date</label>
+                <input type="date" id="fDate" name="date" class="form-control form-control-sm"
+                       value="{{ filter_date }}" min="{{ today }}">
+            </div>
+            <div class="col-md-2">
+                <label for="fDur" class="form-label small fw-semibold">Duration</label>
+                <select id="fDur" name="duration" class="form-select form-select-sm">
+                    <option value="">Any duration</option>
+                    <option value="short"  {% if filter_duration=='short' %}selected{% endif %}>Short (&lt; 1 h)</option>
+                    <option value="medium" {% if filter_duration=='medium' %}selected{% endif %}>Medium (1–2 h)</option>
+                    <option value="long"   {% if filter_duration=='long' %}selected{% endif %}>Long (&gt; 2 h)</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="fLang" class="form-label small fw-semibold">Language</label>
+                <select id="fLang" name="language" class="form-select form-select-sm">
+                    <option value="">Any language</option>
+                    {% for lang in languages %}
+                        <option value="{{ lang }}" {% if filter_language==lang %}selected{% endif %}>{{ lang }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="fTheme" class="form-label small fw-semibold">Theme</label>
+                <select id="fTheme" name="theme" class="form-select form-select-sm">
+                    <option value="">Any theme</option>
+                    {% for theme in themes %}
+                        <option value="{{ theme }}" {% if filter_theme==theme %}selected{% endif %}>{{ theme }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="fSortLang" class="form-label small fw-semibold">Sort by Language</label>
+                <select id="fSortLang" name="sort_language" class="form-select form-select-sm">
+                    <option value="">Default</option>
+                    <option value="Italian" {% if sort_language=='Italian' %}selected{% endif %}>Italian</option>
+                    <option value="English" {% if sort_language=='English' %}selected{% endif %}>English</option>
+                    <option value="Portuguese" {% if sort_language=='Portuguese' %}selected{% endif %}>Portuguese</option>
+                    <option value="Spanish" {% if sort_language=='Spanish' %}selected{% endif %}>Spanish</option>
+                    <option value="German" {% if sort_language=='German' %}selected{% endif %}>German</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                    <i class="bi bi-search me-1"></i>Filter
+                </button>
+                {% if filter_date or filter_duration or filter_language or filter_theme or sort_language %}
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Tours grid -->
+<section class="py-5">
+    <div class="container">
+        {% if tours %}
+            <p class="text-muted mb-4">
+                {{ tours|length }} tour{% if tours|length != 1 %}s{% endif %} available
+                {% if filter_date or filter_duration or filter_language or filter_theme %} matching your filters{% endif %}
+            </p>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for item in tours %}
+                    {% set t = item.tour %}
+                    <article class="col">
+                        <div class="card tour-card h-100 shadow-sm border-0">
+                            <a href="{{ url_for('tour_detail', tour_id=t['id']) }}" class="tour-card-img-link">
+                                {% if item.photo and item.photo != 'placeholder' %}
+                                    <img src="{{ url_for('static', filename='uploads/' + item.photo) }}"
+                                         class="card-img-top tour-card-img" alt="{{ t['title'] }}">
+                                {% else %}
+                                    <div class="tour-card-img tour-placeholder-img d-flex align-items-center
+                                                justify-content-center">
+                                        <i class="bi bi-image text-white" style="font-size:2.5rem;opacity:.5"></i>
+                                    </div>
+                                {% endif %}
+                                <span class="lang-badge badge">{{ t['language'] }}</span>
+                            </a>
+                            <div class="card-body d-flex flex-column">
+                                <h2 class="card-title h5 mb-1">
+                                    <a href="{{ url_for('tour_detail', tour_id=t['id']) }}"
+                                       class="text-decoration-none text-dark">
+                                        {{ t['title'] }}
+                                    </a>
+                                </h2>
+                                <p class="text-muted small mb-2">
+                                    <i class="bi bi-person me-1"></i>{{ t['guide_name'] }}
+                                </p>
+                                <p class="small mb-2">
+                                    <span class="badge text-bg-light border">{{ t['theme'] }}</span>
+                                </p>
+                                <p class="card-text small text-secondary mb-3">
+                                    {{ t['description'][:110] }}{% if t['description']|length > 110 %}…{% endif %}
+                                </p>
+                                <ul class="list-unstyled small mt-auto mb-0">
+                                    <li>
+                                        <i class="bi bi-clock text-primary me-1"></i>
+                                        {{ t['duration'] | duration_fmt }}
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-geo-alt text-primary me-1"></i>
+                                        {{ t['meeting_point'][:50] }}{% if t['meeting_point']|length > 50 %}…{% endif %}
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-calendar3 text-primary me-1"></i>
+                                        {% for s in item.schedule %}
+                                            {{ s['day_of_week'][:3] }} {{ s['start_time'] }}{% if not loop.last %} · {% endif %}
+                                        {% endfor %}
+                                    </li>
+                                </ul>
+                                {% if current_user.is_authenticated and current_user.role == 'participant' %}
+                                    <a href="{{ url_for('tour_detail', tour_id=t['id']) }}#reserve-panel"
+                                       class="btn btn-primary btn-sm mt-3">
+                                        <i class="bi bi-calendar-plus me-1"></i>Join Tour
+                                    </a>
+                                {% else %}
+                                    <a href="{{ url_for('tour_detail', tour_id=t['id']) }}"
+                                       class="btn btn-outline-primary btn-sm mt-3">
+                                        View Details
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-binoculars display-3 text-muted"></i>
+                <p class="lead mt-3 text-muted">No tours found for your search criteria.</p>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-primary mt-2">Show all tours</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Set min date for the date filter to today
+    document.getElementById('fDate').min = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}
