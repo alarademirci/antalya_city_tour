@@ -1,10 +1,10 @@
 # Antalya City Tours – Access Info
 # =========================================
 
-Live Demo:
+Live Demo is here:
 https://alara.pythonanywhere.com
 
-GitHub Repository:
+My GitHubitHub Repository can be found here:
 https://github.com/alarademirci/antalya_city_tour
 
 ## How to run locally (for testing purposes :)

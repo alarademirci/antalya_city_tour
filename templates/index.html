@@ -3,7 +3,7 @@
 {% block title %}Antalya Free Walking Tours{% endblock %}
 
 {% block content %}
-<!-- Hero -->
+<!-- Hero Section (Banner)-->
 <header class="hero-section">
     <div class="hero-overlay"></div>
     <div class="container position-relative text-white text-center py-5">
@@ -144,7 +144,7 @@
         {% else %}
             <div class="text-center py-5">
                 <i class="bi bi-binoculars display-3 text-muted"></i>
-                <p class="lead mt-3 text-muted">No tours found for your search criteria.</p>
+                <p class="lead mt-3 text-muted">There are no tours found for your search criteria.</p>
                 <a href="{{ url_for('index') }}" class="btn btn-outline-primary mt-2">Show all tours</a>
             </div>
         {% endif %}

@@ -1,6 +1,6 @@
 """
 Initialise the database and seed sample data for Antalya City Tours.
-Run once:  python init_db.py
+Runs once:  python init_db.py
 """
 import os
 import sqlite3

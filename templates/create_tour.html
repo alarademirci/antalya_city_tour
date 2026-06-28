@@ -18,7 +18,7 @@
                   enctype="multipart/form-data" id="tourForm" novalidate>
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
 
-                <!-- Basic info -->
+                <!-- Basic info for tour -->
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-body p-4">
                         <h2 class="h5 fw-bold mb-3">Basic Information</h2>
@@ -235,7 +235,7 @@
 
     document.querySelectorAll('.remove-stop').forEach(attachRemoveListener);
 
-    // Front-end: require at least one day checked
+    // Require at least one day to be checked
     document.getElementById('tourForm').addEventListener('submit', function (e) {
         const checked = document.querySelectorAll('input[name="schedule_days"]:checked');
         if (checked.length === 0) {

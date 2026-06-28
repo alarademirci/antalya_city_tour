@@ -326,6 +326,85 @@ def has_reservations(tour_id):
     return r is not None
 
 
+def collect_guest_names(form):
+    guests = []
+    for i in range(1, 4):
+        gfn = form.get(f'guest_fn_{i}', '').strip()
+        gln = form.get(f'guest_ln_{i}', '').strip()
+        if gfn and gln:
+            guests.append((gfn, gln))
+    return guests
+
+
+def validate_basic_reservation_input(tour_date, num_str, guests):
+    errors = []
+    if not tour_date:
+        errors.append('Please select a tour date.')
+    if not num_str.isdigit() or not (1 <= int(num_str) <= 4):
+        errors.append('Number of people must be between 1 and 4.')
+
+    num_people = int(num_str) if num_str.isdigit() else 1
+    if not errors and len(guests) != max(0, num_people - 1):
+        errors.append('Please provide first and last names for all additional participants.')
+
+    return num_people, errors
+
+
+def validate_reservation_rules(db, tour_id, participant_id, tour, tour_date, start_time, num_people):
+    errors = []
+    try:
+        td_obj = datetime.strptime(tour_date, '%Y-%m-%d').date()
+        day_name = td_obj.strftime('%A')
+        if td_obj <= date.today():
+            errors.append('You cannot reserve a past or current-day tour.')
+
+        valid_sched = db.execute(
+            'SELECT start_time FROM tour_schedule WHERE tour_id=? AND day_of_week=? AND start_time=?',
+            (tour_id, day_name, start_time)
+        ).fetchone()
+        if not valid_sched:
+            errors.append('Invalid tour date or time selection.')
+
+        existing = db.execute(
+            'SELECT 1 FROM reservations WHERE participant_id=? AND tour_id=? AND tour_date=?',
+            (participant_id, tour_id, tour_date)
+        ).fetchone()
+        if existing:
+            errors.append('You already have a reservation for this tour on that date.')
+
+        if not errors:
+            spots = available_spots(tour_id, tour_date, tour['max_participants'])
+            if num_people > spots:
+                errors.append(f'Only {spots} spot(s) available for this date.')
+            if check_overlap(participant_id, tour_date, start_time, tour['duration']):
+                errors.append('This tour overlaps with another reservation you have.')
+    except ValueError:
+        errors.append('Invalid date format.')
+
+    return errors
+
+
+def build_participant_res_data(db, reservations):
+    res_data = []
+    today = date.today()
+    now = datetime.now()
+    for res in reservations:
+        guests = db.execute(
+            'SELECT first_name, last_name FROM reservation_guests WHERE reservation_id = ?',
+            (res['id'],)
+        ).fetchall()
+        td = datetime.strptime(res['tour_date'], '%Y-%m-%d').date()
+        tour_dt = datetime.strptime(f"{res['tour_date']} {res['start_time']}", '%Y-%m-%d %H:%M')
+        can_cancel = now < tour_dt - timedelta(hours=24) and td >= today
+        res_data.append({
+            'res': res,
+            'guests': guests,
+            'can_cancel': can_cancel,
+            'is_past': td < today,
+        })
+    return res_data
+
+
 def is_safe_url(target):
     ref = urlparse(request.host_url)
     test = urlparse(urljoin(request.host_url, target))
@@ -922,21 +1001,7 @@ def participant_profile():
         'WHERE r.participant_id = ? ORDER BY r.tour_date, r.start_time',
         (current_user.id,)
     ).fetchall()
-    res_data = []
-    today = date.today()
-    for res in reservations:
-        guests = db.execute(
-            'SELECT first_name, last_name FROM reservation_guests WHERE reservation_id = ?',
-            (res['id'],)
-        ).fetchall()
-        td = datetime.strptime(res['tour_date'], '%Y-%m-%d').date()
-        tour_dt = datetime.strptime(f"{res['tour_date']} {res['start_time']}", '%Y-%m-%d %H:%M')
-        can_cancel = datetime.now() < tour_dt - timedelta(hours=24) and td >= today
-        res_data.append({
-            'res': res, 'guests': guests,
-            'can_cancel': can_cancel,
-            'is_past': td < today,
-        })
+    res_data = build_participant_res_data(db, reservations)
     db.close()
     return render_template('participant_profile.html', res_data=res_data)
 
@@ -957,49 +1022,22 @@ def reserve(tour_id):
     tour_date = request.form.get('tour_date', '').strip()
     start_time = request.form.get('start_time', '').strip()
     num_str = request.form.get('num_people', '1').strip()
-    guests = []
-    for i in range(1, 4):
-        gfn = request.form.get(f'guest_fn_{i}', '').strip()
-        gln = request.form.get(f'guest_ln_{i}', '').strip()
-        if gfn and gln:
-            guests.append((gfn, gln))
+    guests = collect_guest_names(request.form)
 
-    errors = []
-    if not tour_date:
-        errors.append('Please select a tour date.')
-    if not num_str.isdigit() or not (1 <= int(num_str) <= 4):
-        errors.append('Number of people must be between 1 and 4.')
-
-    num_people = int(num_str) if num_str.isdigit() else 1
-
-    if not errors and len(guests) != max(0, num_people - 1):
-        errors.append('Please provide first and last names for all additional participants.')
+    num_people, errors = validate_basic_reservation_input(tour_date, num_str, guests)
 
     if not errors:
-        try:
-            td_obj = datetime.strptime(tour_date, '%Y-%m-%d').date()
-            day_name = td_obj.strftime('%A')
-            if td_obj <= date.today():
-                errors.append('You cannot reserve a past or current-day tour.')
-            valid_sched = db.execute(
-                'SELECT start_time FROM tour_schedule WHERE tour_id=? AND day_of_week=? AND start_time=?',
-                (tour_id, day_name, start_time)
-            ).fetchone()
-            if not valid_sched:
-                errors.append('Invalid tour date or time selection.')
-            if db.execute(
-                'SELECT 1 FROM reservations WHERE participant_id=? AND tour_id=? AND tour_date=?',
-                (current_user.id, tour_id, tour_date)
-            ).fetchone():
-                errors.append('You already have a reservation for this tour on that date.')
-            if not errors:
-                spots = available_spots(tour_id, tour_date, tour['max_participants'])
-                if num_people > spots:
-                    errors.append(f'Only {spots} spot(s) available for this date.')
-                if check_overlap(current_user.id, tour_date, start_time, tour['duration']):
-                    errors.append('This tour overlaps with another reservation you have.')
-        except ValueError:
-            errors.append('Invalid date format.')
+        errors.extend(
+            validate_reservation_rules(
+                db,
+                tour_id,
+                current_user.id,
+                tour,
+                tour_date,
+                start_time,
+                num_people,
+            )
+        )
 
     if not errors:
         try:
